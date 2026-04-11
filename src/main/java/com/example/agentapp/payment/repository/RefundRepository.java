@@ -21,4 +21,8 @@ public interface RefundRepository extends JpaRepository<Refund, Long> {
     @Query("SELECT COALESCE(SUM(r.refundAmountInBaseCurrency), 0) FROM Refund r " +
            "WHERE r.payment.reservation.id = :reservationId AND r.refundStatus = 'COMPLETED'")
     BigDecimal sumCompletedRefundsByReservationId(@Param("reservationId") Long reservationId);
+
+    // Tüm tamamlanan iadelerin toplamı
+    @Query("SELECT COALESCE(SUM(r.refundAmountInBaseCurrency), 0) FROM Refund r WHERE r.refundStatus = 'COMPLETED'")
+    BigDecimal sumAllCompletedRefunds();
 }
