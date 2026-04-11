@@ -11,10 +11,13 @@ import com.example.agentapp.reservation.dto.*;
 import com.example.agentapp.reservation.model.*;
 import com.example.agentapp.reservation.repository.GroupReservationRepository;
 import com.example.agentapp.reservation.repository.ReservationRepository;
+import com.example.agentapp.notification.event.AppNotificationEvent;
+import com.example.agentapp.notification.model.NotificationEventType;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -38,6 +41,7 @@ public class ReservationService {
     private final HotelRepository hotelRepository;
     private final RoomRepository roomRepository;
     private final TransferRepository transferRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Autowired
     public ReservationService(ReservationRepository reservationRepository,
@@ -46,7 +50,8 @@ public class ReservationService {
                               TourRepository tourRepository,
                               HotelRepository hotelRepository,
                               RoomRepository roomRepository,
-                              TransferRepository transferRepository) {
+                              TransferRepository transferRepository,
+                              ApplicationEventPublisher eventPublisher) {
         this.reservationRepository = reservationRepository;
         this.groupReservationRepository = groupReservationRepository;
         this.userRepository = userRepository;
@@ -54,6 +59,7 @@ public class ReservationService {
         this.hotelRepository = hotelRepository;
         this.roomRepository = roomRepository;
         this.transferRepository = transferRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     // ─── Bireysel Rezervasyon ────────────────────────────────────────────────
@@ -64,6 +70,14 @@ public class ReservationService {
         Reservation reservation = buildReservation(request, user);
         Reservation saved = reservationRepository.save(reservation);
         logger.info("Reservation created: {}", saved.getId());
+
+        String tourName = saved.getTour() != null ? saved.getTour().getName() : null;
+        String destination = saved.getTour() != null ? saved.getTour().getDestination() : null;
+        eventPublisher.publishEvent(new AppNotificationEvent(
+                this, NotificationEventType.RESERVATION_CREATED,
+                user.getId(), user.getUsername(), user.getEmail(), user.getPhone()
+        ).withReservation(saved.getId(), tourName, destination, saved.getTotalPrice(), saved.getCurrency()));
+
         return toDTO(saved);
     }
 
@@ -140,7 +154,17 @@ public class ReservationService {
         }
 
         reservation.setReservationStatus(ReservationStatus.CANCELLED);
-        return toDTO(reservationRepository.save(reservation));
+        Reservation saved = reservationRepository.save(reservation);
+
+        User user = saved.getUser();
+        String tourName = saved.getTour() != null ? saved.getTour().getName() : null;
+        String destination = saved.getTour() != null ? saved.getTour().getDestination() : null;
+        eventPublisher.publishEvent(new AppNotificationEvent(
+                this, NotificationEventType.RESERVATION_CANCELLED,
+                user.getId(), user.getUsername(), user.getEmail(), user.getPhone()
+        ).withReservation(saved.getId(), tourName, destination, saved.getTotalPrice(), saved.getCurrency()));
+
+        return toDTO(saved);
     }
 
     @Transactional
@@ -150,7 +174,17 @@ public class ReservationService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Only PENDING reservations can be confirmed");
         }
         reservation.setReservationStatus(ReservationStatus.CONFIRMED);
-        return toDTO(reservationRepository.save(reservation));
+        Reservation saved = reservationRepository.save(reservation);
+
+        User user = saved.getUser();
+        String tourName = saved.getTour() != null ? saved.getTour().getName() : null;
+        String destination = saved.getTour() != null ? saved.getTour().getDestination() : null;
+        eventPublisher.publishEvent(new AppNotificationEvent(
+                this, NotificationEventType.RESERVATION_CONFIRMED,
+                user.getId(), user.getUsername(), user.getEmail(), user.getPhone()
+        ).withReservation(saved.getId(), tourName, destination, saved.getTotalPrice(), saved.getCurrency()));
+
+        return toDTO(saved);
     }
 
     // ─── Grup Rezervasyonu ───────────────────────────────────────────────────

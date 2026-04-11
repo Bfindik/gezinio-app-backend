@@ -7,10 +7,13 @@ import com.example.agentapp.payment.repository.RefundRepository;
 import com.example.agentapp.reservation.model.Reservation;
 import com.example.agentapp.reservation.model.ReservationStatus;
 import com.example.agentapp.reservation.repository.ReservationRepository;
+import com.example.agentapp.notification.event.AppNotificationEvent;
+import com.example.agentapp.notification.model.NotificationEventType;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -28,14 +31,17 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final RefundRepository refundRepository;
     private final ReservationRepository reservationRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Autowired
     public PaymentService(PaymentRepository paymentRepository,
                           RefundRepository refundRepository,
-                          ReservationRepository reservationRepository) {
+                          ReservationRepository reservationRepository,
+                          ApplicationEventPublisher eventPublisher) {
         this.paymentRepository = paymentRepository;
         this.refundRepository = refundRepository;
         this.reservationRepository = reservationRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     // ─── Ödeme ───────────────────────────────────────────────────────────────
@@ -93,6 +99,17 @@ public class PaymentService {
 
         // Rezervasyon ödeme durumunu güncelle
         updateReservationPaymentStatus(reservation);
+
+        // Ödeme bildirimi gönder
+        com.example.agentapp.auth.model.User user = reservation.getUser();
+        eventPublisher.publishEvent(new AppNotificationEvent(
+                this, NotificationEventType.PAYMENT_RECEIVED,
+                user.getId(), user.getUsername(), user.getEmail(), user.getPhone()
+        ).withReservation(reservation.getId(),
+                reservation.getTour() != null ? reservation.getTour().getName() : null,
+                reservation.getTour() != null ? reservation.getTour().getDestination() : null,
+                reservation.getTotalPrice(), reservation.getCurrency())
+         .withPayment(saved.getAmountInBaseCurrency(), reservation.getCurrency()));
 
         return toDTO(saved);
     }
@@ -176,7 +193,19 @@ public class PaymentService {
 
         // Ödeme ve rezervasyon durumlarını güncelle
         updatePaymentRefundStatus(payment);
-        updateReservationPaymentStatus(payment.getReservation());
+        Reservation refundReservation = payment.getReservation();
+        updateReservationPaymentStatus(refundReservation);
+
+        // İade bildirimi gönder
+        com.example.agentapp.auth.model.User refundUser = refundReservation.getUser();
+        eventPublisher.publishEvent(new AppNotificationEvent(
+                this, NotificationEventType.REFUND_PROCESSED,
+                refundUser.getId(), refundUser.getUsername(), refundUser.getEmail(), refundUser.getPhone()
+        ).withReservation(refundReservation.getId(),
+                refundReservation.getTour() != null ? refundReservation.getTour().getName() : null,
+                refundReservation.getTour() != null ? refundReservation.getTour().getDestination() : null,
+                refundReservation.getTotalPrice(), refundReservation.getCurrency())
+         .withRefund(saved.getRefundAmountInBaseCurrency()));
 
         return toRefundDTO(saved);
     }

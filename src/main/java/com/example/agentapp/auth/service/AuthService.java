@@ -9,7 +9,10 @@ import com.example.agentapp.auth.repository.RoleRepository;
 import com.example.agentapp.auth.repository.UserRepository;
 import com.example.agentapp.auth.security.JwtService;
 import com.example.agentapp.auth.security.UserPrincipal;
+import com.example.agentapp.notification.event.AppNotificationEvent;
+import com.example.agentapp.notification.model.NotificationEventType;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -39,14 +42,17 @@ public class AuthService {
 
     private final AuthenticationManager authenticationManager;
 
+    private final ApplicationEventPublisher eventPublisher;
+
     @Autowired
-    public AuthService(UserRepository userRepository, RoleRepository roleRepository, RefreshTokenService refreshTokenService, PasswordEncoder passwordEncoder, JwtService jwtService, AuthenticationManager authenticationManager) {
+    public AuthService(UserRepository userRepository, RoleRepository roleRepository, RefreshTokenService refreshTokenService, PasswordEncoder passwordEncoder, JwtService jwtService, AuthenticationManager authenticationManager, ApplicationEventPublisher eventPublisher) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.refreshTokenService = refreshTokenService;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.authenticationManager = authenticationManager;
+        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -85,7 +91,13 @@ public class AuthService {
         // 5. Kaydet
         User savedUser = userRepository.save(user);
 
-        // 6. Token oluştur
+        // 6. Kayıt bildirimi gönder
+        eventPublisher.publishEvent(new AppNotificationEvent(
+                this, NotificationEventType.USER_REGISTERED,
+                savedUser.getId(), savedUser.getUsername(), savedUser.getEmail(), savedUser.getPhone()
+        ));
+
+        // 7. Token oluştur
         String accessToken = jwtService.generateToken(
                 savedUser.getUsername(),
                 savedUser.getId()
