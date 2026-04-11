@@ -17,11 +17,15 @@ import java.io.IOException;
 // Her API isteğinde JWT token'ı kontrol etmek
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter { // Forward/include olsa bile filtre SADECE 1 KEZ çalışır!
-    @Autowired
-    private JwtService jwtService;
+    private final JwtService jwtService;
+
+    private final CustomUserDetailsService customUserDetailsService;
 
     @Autowired
-    private CustomUserDetailsService customUserDetailsService;
+    public JwtAuthenticationFilter(JwtService jwtService, CustomUserDetailsService customUserDetailsService) {
+        this.jwtService = jwtService;
+        this.customUserDetailsService = customUserDetailsService;
+    }
 
     @Override
     protected void doFilterInternal( // ana method controllerdan önce burası çalışır

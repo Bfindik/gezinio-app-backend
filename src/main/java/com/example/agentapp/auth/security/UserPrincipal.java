@@ -9,7 +9,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class UserPrincipal implements UserDetails {
     // Amaç User entity'sini Spring Security'nin anlayacağı formata çevirmek
@@ -69,9 +68,9 @@ public class UserPrincipal implements UserDetails {
             authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName()));
 
             // 2. ROL'ÜN TÜM PERMİSSİON'LARINI EKLE
-            role.getPermissions().forEach(permission -> {
-                authorities.add(new SimpleGrantedAuthority(permission.getName().name()));
-            });
+            role.getPermissions().forEach(permission ->
+                authorities.add(new SimpleGrantedAuthority(permission.getName().name()))
+            );
         }
 
         return authorities;

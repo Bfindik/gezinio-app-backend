@@ -18,17 +18,21 @@ import java.util.stream.Collectors;
 @Service
 public class RoleService {
 
-    @Autowired
-    private RoleRepository roleRepository;
+    private final RoleRepository roleRepository;
+
+    private final PermissionRepository permissionRepository;
+
+    private final UserRepository userRepository;
+
+    private final UserService userService;
 
     @Autowired
-    private PermissionRepository permissionRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private UserService userService;
+    public RoleService(RoleRepository roleRepository, PermissionRepository permissionRepository, UserRepository userRepository, UserService userService) {
+        this.roleRepository = roleRepository;
+        this.permissionRepository = permissionRepository;
+        this.userRepository = userRepository;
+        this.userService = userService;
+    }
 
     @Transactional(readOnly = true)
     public List<Role> getAllRoles() {

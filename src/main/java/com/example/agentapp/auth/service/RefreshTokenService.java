@@ -14,11 +14,15 @@ import java.util.List;
 @Service
 public class RefreshTokenService {
 
-    @Autowired
-    private RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
+
+    private final JwtService jwtService;
 
     @Autowired
-    private JwtService jwtService;
+    public RefreshTokenService(RefreshTokenRepository refreshTokenRepository, JwtService jwtService) {
+        this.refreshTokenRepository = refreshTokenRepository;
+        this.jwtService = jwtService;
+    }
 
     @Transactional
     public RefreshToken createRefreshToken(User user) {
