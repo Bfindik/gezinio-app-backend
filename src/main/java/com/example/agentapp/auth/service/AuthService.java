@@ -27,34 +27,37 @@ import java.util.stream.Collectors;
 @Service
 public class AuthService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+
+    private final RoleRepository roleRepository;
+
+    private final RefreshTokenService refreshTokenService;
+
+    private final PasswordEncoder passwordEncoder;
+
+    private final JwtService jwtService;
+
+    private final AuthenticationManager authenticationManager;
 
     @Autowired
-    private RoleRepository roleRepository;
-
-    @Autowired
-    private RefreshTokenService refreshTokenService;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private JwtService jwtService;
-
-    @Autowired
-    private AuthenticationManager authenticationManager;
-
+    public AuthService(UserRepository userRepository, RoleRepository roleRepository, RefreshTokenService refreshTokenService, PasswordEncoder passwordEncoder, JwtService jwtService, AuthenticationManager authenticationManager) {
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.refreshTokenService = refreshTokenService;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
+        this.authenticationManager = authenticationManager;
+    }
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
 
         // 1. Duplicate check
-        if (userRepository.existsByUsername(request.getUsername())) {
+        if (Boolean.TRUE.equals(userRepository.existsByUsername(request.getUsername()))) {
             throw new RuntimeException("Username already exists");
         }
 
-        if (userRepository.existsByEmail(request.getEmail())) {
+        if (Boolean.TRUE.equals(userRepository.existsByEmail(request.getEmail()))) {
             throw new RuntimeException("Email already exists");
         }
 

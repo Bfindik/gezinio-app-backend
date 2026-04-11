@@ -139,9 +139,6 @@ public class JwtService {
         } catch (MalformedJwtException e) {
             // Token formatı yanlış
             throw new RuntimeException("Geçersiz token formatı", e);
-        } catch (SignatureException e) {
-            // İmza yanlış (SECRET KEY farklı veya token değiştirilmiş)
-            throw new RuntimeException("Token imzası geçersiz", e);
         } catch (Exception e) {
             // Diğer hatalar
             throw new RuntimeException("Token doğrulama hatası", e);

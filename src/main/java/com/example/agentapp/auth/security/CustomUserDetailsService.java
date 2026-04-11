@@ -14,8 +14,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class CustomUserDetailsService implements UserDetailsService {
     // Spring Security'ye kullanıcıyı database'den nasıl
     //       yükleyeceğini öğretmek
+    private final UserRepository userRepository;
+
     @Autowired
-    private UserRepository userRepository;
+    public CustomUserDetailsService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
     @Transactional(readOnly = true) // Database okuma işlemi
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
