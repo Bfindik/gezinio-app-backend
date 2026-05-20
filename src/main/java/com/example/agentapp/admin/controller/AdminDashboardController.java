@@ -14,7 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/admin/dashboard")
 @PreAuthorize("hasRole('ADMIN')")
-@Tag(name = "Admin Dashboard", description = "Aggregated dashboard statistics for administrators")
+@Tag(name = "Admin — Dashboard", description = "Aggregated dashboard statistics for administrators")
 public class AdminDashboardController {
 
     private final AdminDashboardService dashboardService;

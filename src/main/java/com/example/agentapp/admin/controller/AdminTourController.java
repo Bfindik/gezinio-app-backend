@@ -16,7 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/admin/tours")
 @PreAuthorize("hasRole('ADMIN')")
-@Tag(name = "Admin Tours", description = "Administrative tour statistics and reporting")
+@Tag(name = "Admin — Tours", description = "Administrative tour statistics and reporting")
 public class AdminTourController {
 
     private final AdminTourService adminTourService;

@@ -16,7 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "*", maxAge = 3600) // CORS - Production'da değiştir!
-@Tag(name = "Authentication", description = "User registration, login, logout, and token refresh endpoints")
+@Tag(name = "Auth", description = "User registration, login, logout, and token refresh endpoints")
 public class AuthController {
 
 

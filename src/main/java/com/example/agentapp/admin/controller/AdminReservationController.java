@@ -19,7 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/admin/reservations")
 @PreAuthorize("hasRole('ADMIN')")
-@Tag(name = "Admin Reservations", description = "Administrative reservation search and lifecycle management")
+@Tag(name = "Admin — Reservations", description = "Administrative reservation search and lifecycle management")
 public class AdminReservationController {
 
     private final AdminReservationService adminReservationService;

@@ -21,7 +21,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping("/api/admin/roles")
 @PreAuthorize("hasRole('SUPER_ADMIN')") // ← Tüm endpoint'ler SUPER_ADMIN gerektirir
 @CrossOrigin(origins = "*", maxAge = 3600)
-@Tag(name = "Role Management", description = "Manage roles and their permission assignments (SUPER_ADMIN only)")
+@Tag(name = "Admin — Roles", description = "Manage roles and their permission assignments (SUPER_ADMIN only)")
 public class RoleController {
 
     private final RoleService roleService;

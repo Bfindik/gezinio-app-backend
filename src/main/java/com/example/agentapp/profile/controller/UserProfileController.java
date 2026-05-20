@@ -15,7 +15,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/api/profile")
-@Tag(name = "User Profile", description = "Self-service profile view, update, and password change")
+@Tag(name = "Profile", description = "Self-service profile view, update, and password change")
 public class UserProfileController {
 
     private final UserProfileService profileService;

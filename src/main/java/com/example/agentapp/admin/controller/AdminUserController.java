@@ -16,7 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/admin/users")
 @PreAuthorize("hasRole('ADMIN')")
-@Tag(name = "Admin Users", description = "Administrative user account management: status, lockout, and role assignments")
+@Tag(name = "Admin — Users", description = "Administrative user account management: status, lockout, and role assignments")
 public class AdminUserController {
 
     private final AdminUserService adminUserService;

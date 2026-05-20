@@ -20,7 +20,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/reviews")
-@Tag(name = "Tour Reviews", description = "User tour reviews and ratings, plus admin moderation endpoints")
+@Tag(name = "Reviews", description = "User tour reviews and ratings, plus admin moderation endpoints")
 public class ReviewController {
 
     private final ReviewService reviewService;
