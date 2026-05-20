@@ -77,7 +77,7 @@ public class AdminUserService {
             } catch (IllegalArgumentException e) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid role: " + roleName);
             }
-            Role role = roleRepository.findByName(rn)
+            Role role = roleRepository.findByName(rn.name())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Role not found: " + roleName));
             newRoles.add(role);
         }

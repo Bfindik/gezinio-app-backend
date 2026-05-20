@@ -14,11 +14,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/api/admin/roles")
 @PreAuthorize("hasRole('SUPER_ADMIN')") // ← Tüm endpoint'ler SUPER_ADMIN gerektirir
 @CrossOrigin(origins = "*", maxAge = 3600)
+@Tag(name = "Role Management", description = "Manage roles and their permission assignments (SUPER_ADMIN only)")
 public class RoleController {
 
     private final RoleService roleService;
@@ -29,6 +32,7 @@ public class RoleController {
     }
 
     @GetMapping
+    @Operation(summary = "List all roles")
     public ResponseEntity<ApiResponse<List<Role>>> getAllRoles() {
         List<Role> roles = roleService.getAllRoles();
         return ResponseEntity.ok(
@@ -36,6 +40,7 @@ public class RoleController {
         );
     }
     @GetMapping("/{id}")
+    @Operation(summary = "Get a role by its ID")
     public ResponseEntity<ApiResponse<Role>> getRoleById(@PathVariable Long id) {
         Role role = roleService.getRoleById(id);
         return ResponseEntity.ok(
@@ -44,6 +49,7 @@ public class RoleController {
     }
 
     @PostMapping
+    @Operation(summary = "Create a new role with the given permissions")
     public ResponseEntity<ApiResponse<Role>> createRole(
             @RequestBody CreateRoleRequest request) {
 
@@ -59,6 +65,7 @@ public class RoleController {
     }
 
     @PutMapping("/{id}")
+    @Operation(summary = "Update the name or description of a role")
     public ResponseEntity<ApiResponse<Role>> updateRole(
             @PathVariable Long id,
             @RequestBody UpdateRoleRequest request) {
@@ -75,6 +82,7 @@ public class RoleController {
     }
 
     @DeleteMapping("/{id}")
+    @Operation(summary = "Delete a role by its ID")
     public ResponseEntity<ApiResponse<Void>> deleteRole(@PathVariable Long id) {
 
         roleService.deleteRole(id);
@@ -85,6 +93,7 @@ public class RoleController {
     }
 
     @PostMapping("/{id}/permissions/add")
+    @Operation(summary = "Add one or more permissions to a role")
     public ResponseEntity<ApiResponse<Role>> addPermissions(
             @PathVariable Long id,
             @RequestBody PermissionRequest request) {
@@ -101,6 +110,7 @@ public class RoleController {
 
 
     @PostMapping("/{id}/permissions/remove")
+    @Operation(summary = "Remove one or more permissions from a role")
     public ResponseEntity<ApiResponse<Role>> removePermissions(
             @PathVariable Long id,
             @RequestBody PermissionRequest request) {

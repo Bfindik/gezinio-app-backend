@@ -303,7 +303,7 @@ public class DataInitializer {
         }
 
         // Super Admin rolünü al
-        Role superAdminRole = roleRepository.findByName(RoleName.SUPER_ADMIN)
+        Role superAdminRole = roleRepository.findByName(RoleName.SUPER_ADMIN.name())
                 .orElseThrow(() -> new RuntimeException(
                         "SUPER_ADMIN role not found. Create roles first!"
                 ));

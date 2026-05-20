@@ -81,7 +81,7 @@ public class AuthService {
         user.setPhone(request.getPhone());
 
         // 4. Default role ekle (CUSTOMER)
-        Role customerRole = roleRepository.findByName(RoleName.CUSTOMER)
+        Role customerRole = roleRepository.findByName(RoleName.CUSTOMER.name())
                 .orElseThrow(() -> new RuntimeException("CUSTOMER role not found"));
 
         Set<Role> roles = new HashSet<>();

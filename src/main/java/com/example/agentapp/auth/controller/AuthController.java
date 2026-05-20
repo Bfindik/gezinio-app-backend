@@ -10,10 +10,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/api/auth")
 @CrossOrigin(origins = "*", maxAge = 3600) // CORS - Production'da değiştir!
+@Tag(name = "Authentication", description = "User registration, login, logout, and token refresh endpoints")
 public class AuthController {
 
 
@@ -25,6 +28,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
+    @Operation(summary = "Register a new user account")
     public ResponseEntity<ApiResponse<AuthResponse>> register(
             @Valid @RequestBody RegisterRequest request) {
 
@@ -37,6 +41,7 @@ public class AuthController {
 
 
     @PostMapping("/login")
+    @Operation(summary = "Authenticate user and issue JWT access and refresh tokens")
     public ResponseEntity<ApiResponse<AuthResponse>> login(
             @Valid @RequestBody LoginRequest request) {
 
@@ -48,6 +53,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
+    @Operation(summary = "Log out the current user and invalidate refresh tokens")
     public ResponseEntity<ApiResponse<Void>> logout(Authentication authentication) {
 
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
@@ -61,6 +67,7 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
+    @Operation(summary = "Issue a new access token using a valid refresh token")
     public ResponseEntity<ApiResponse<AuthResponse>> refreshToken(
             @Valid @RequestBody RefreshTokenRequest request) {
 

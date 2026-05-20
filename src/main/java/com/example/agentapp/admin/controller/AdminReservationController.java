@@ -10,6 +10,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,6 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/admin/reservations")
 @PreAuthorize("hasRole('ADMIN')")
+@Tag(name = "Admin Reservations", description = "Administrative reservation search and lifecycle management")
 public class AdminReservationController {
 
     private final AdminReservationService adminReservationService;
@@ -27,6 +30,7 @@ public class AdminReservationController {
     }
 
     @GetMapping
+    @Operation(summary = "Search reservations using optional status, type, user, tour, and date filters")
     public ResponseEntity<List<AdminReservationDTO>> getReservations(
             @RequestParam(required = false) ReservationStatus status,
             @RequestParam(required = false) ReservationType type,
@@ -47,16 +51,19 @@ public class AdminReservationController {
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "Get a reservation by ID with admin-level detail")
     public ResponseEntity<AdminReservationDTO> getReservationById(@PathVariable Long id) {
         return ResponseEntity.ok(adminReservationService.getReservationById(id));
     }
 
     @PatchMapping("/{id}/confirm")
+    @Operation(summary = "Confirm a pending reservation")
     public ResponseEntity<AdminReservationDTO> confirmReservation(@PathVariable Long id) {
         return ResponseEntity.ok(adminReservationService.confirmReservation(id));
     }
 
     @PatchMapping("/{id}/cancel")
+    @Operation(summary = "Cancel a reservation")
     public ResponseEntity<AdminReservationDTO> cancelReservation(@PathVariable Long id) {
         return ResponseEntity.ok(adminReservationService.cancelReservation(id));
     }

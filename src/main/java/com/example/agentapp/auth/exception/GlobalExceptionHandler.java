@@ -95,8 +95,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ErrorResponse> handleRuntimeException(
             RuntimeException ex,
-            WebRequest request,
-            String warningMessage) {
+            WebRequest request) {
 
         ErrorResponse errorResponse = new ErrorResponse(
                 LocalDateTime.now(),
@@ -105,7 +104,7 @@ public class GlobalExceptionHandler {
                 ex.getMessage(),
                 request.getDescription(false).replace("uri=", "")
         );
-        logger.warning(warningMessage);
+        logger.warning("Runtime exception: " + ex.getMessage());
 
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)

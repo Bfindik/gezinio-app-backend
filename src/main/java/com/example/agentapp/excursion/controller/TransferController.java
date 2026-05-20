@@ -10,11 +10,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/transfers")
+@Tag(name = "Transfers", description = "Tour transfer (transport) management")
 public class TransferController {
 
     private final TransferService transferService;
@@ -26,23 +29,27 @@ public class TransferController {
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN') or hasRole('AGENT')")
+    @Operation(summary = "Create a new transfer for a tour")
     public ResponseEntity<TransferDTO> createTransfer(@Valid @RequestBody TransferCreateRequest request) {
         TransferDTO created = transferService.createTransfer(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @GetMapping("/{id}")
+    @Operation(summary = "Get a transfer by its ID")
     public ResponseEntity<TransferDTO> getTransferById(@PathVariable Long id) {
         return ResponseEntity.ok(transferService.getTransferById(id));
     }
 
     @GetMapping("/tour/{tourId}")
+    @Operation(summary = "List all transfers associated with a tour")
     public ResponseEntity<List<TransferDTO>> getTransfersByTour(@PathVariable Long tourId) {
         return ResponseEntity.ok(transferService.getTransfersByTour(tourId));
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('AGENT')")
+    @Operation(summary = "Update an existing transfer")
     public ResponseEntity<TransferDTO> updateTransfer(
             @PathVariable Long id,
             @Valid @RequestBody TransferUpdateRequest request) {
@@ -51,6 +58,7 @@ public class TransferController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "Delete a transfer by its ID (ADMIN only)")
     public ResponseEntity<Void> deleteTransfer(@PathVariable Long id) {
         transferService.deleteTransfer(id);
         return ResponseEntity.noContent().build();

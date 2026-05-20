@@ -138,10 +138,10 @@ class AdminUserServiceTest {
     @Test
     void changeRoles_whenRoleNotInDB_throwsNotFound() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(roleRepository.findByName(RoleName.ADMIN)).thenReturn(Optional.empty());
+        when(roleRepository.findByName(RoleName.MANAGER.name())).thenReturn(Optional.empty());
 
         ChangeRoleRequest req = new ChangeRoleRequest();
-        req.setRoles(Set.of("ADMIN"));
+        req.setRoles(Set.of("MANAGER"));
 
         ResponseStatusException ex = assertThrows(ResponseStatusException.class,
                 () -> service.changeRoles(1L, req));
@@ -151,17 +151,17 @@ class AdminUserServiceTest {
 
     @Test
     void changeRoles_success_updatesUserRoles() {
-        Role adminRole = new Role("ADMIN");
+        Role managerRole = new Role("MANAGER");
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(roleRepository.findByName(RoleName.ADMIN)).thenReturn(Optional.of(adminRole));
+        when(roleRepository.findByName(RoleName.MANAGER.name())).thenReturn(Optional.of(managerRole));
         when(userRepository.save(any())).thenReturn(user);
 
         ChangeRoleRequest req = new ChangeRoleRequest();
-        req.setRoles(Set.of("ADMIN"));
+        req.setRoles(Set.of("MANAGER"));
 
         service.changeRoles(1L, req);
 
-        assertTrue(user.getRoles().contains(adminRole));
+        assertTrue(user.getRoles().contains(managerRole));
         verify(userRepository).save(user);
     }
 }

@@ -8,12 +8,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/profile/favorites")
+@Tag(name = "Favorites", description = "Manage the current user's favorited tours")
 public class FavoriteController {
 
     private final FavoriteService favoriteService;
@@ -24,12 +27,14 @@ public class FavoriteController {
     }
 
     @GetMapping
+    @Operation(summary = "List the current user's favorite tours")
     public ResponseEntity<List<FavoriteDTO>> getMyFavorites(
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(favoriteService.getMyFavorites(currentUser.getId()));
     }
 
     @PostMapping("/{tourId}")
+    @Operation(summary = "Add a tour to the current user's favorites")
     public ResponseEntity<FavoriteDTO> addFavorite(
             @AuthenticationPrincipal UserPrincipal currentUser,
             @PathVariable Long tourId) {
@@ -38,6 +43,7 @@ public class FavoriteController {
     }
 
     @DeleteMapping("/{tourId}")
+    @Operation(summary = "Remove a tour from the current user's favorites")
     public ResponseEntity<Void> removeFavorite(
             @AuthenticationPrincipal UserPrincipal currentUser,
             @PathVariable Long tourId) {
@@ -46,6 +52,7 @@ public class FavoriteController {
     }
 
     @GetMapping("/{tourId}/check")
+    @Operation(summary = "Check whether a tour is in the current user's favorites")
     public ResponseEntity<Map<String, Boolean>> isFavorite(
             @AuthenticationPrincipal UserPrincipal currentUser,
             @PathVariable Long tourId) {

@@ -8,11 +8,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/notifications")
+@Tag(name = "Notifications", description = "Notification log access for current user and administrators")
 public class NotificationController {
 
     private final NotificationLogRepository logRepository;
@@ -23,6 +26,7 @@ public class NotificationController {
     }
 
     @GetMapping("/my")
+    @Operation(summary = "List notifications sent to the current user")
     public ResponseEntity<List<NotificationLog>> getMyNotifications(
             @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(logRepository.findByUserId(currentUser.getId()));
@@ -30,12 +34,14 @@ public class NotificationController {
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "List all notification logs (ADMIN only)")
     public ResponseEntity<List<NotificationLog>> getAllNotifications() {
         return ResponseEntity.ok(logRepository.findAll());
     }
 
     @GetMapping("/user/{userId}")
     @PreAuthorize("hasRole('ADMIN') or hasRole('AGENT')")
+    @Operation(summary = "List notifications sent to a specific user (ADMIN/AGENT only)")
     public ResponseEntity<List<NotificationLog>> getByUser(@PathVariable Long userId) {
         return ResponseEntity.ok(logRepository.findByUserId(userId));
     }

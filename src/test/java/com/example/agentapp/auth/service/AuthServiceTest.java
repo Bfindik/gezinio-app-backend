@@ -62,7 +62,7 @@ class AuthServiceTest {
         when(passwordEncoder.encode(anyString())).thenReturn("$hashed");
 
         Role customerRole = new Role("CUSTOMER");
-        when(roleRepository.findByName(RoleName.CUSTOMER)).thenReturn(Optional.of(customerRole));
+        when(roleRepository.findByName(RoleName.CUSTOMER.name())).thenReturn(Optional.of(customerRole));
 
         User savedUser = new User("newuser", "new@mail.com", "$hashed");
         savedUser.setId(1L);
