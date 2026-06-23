@@ -82,6 +82,7 @@ public class OpenApiConfig {
                         new Tag().name("Admin — Users").description("Admin user management"),
                         new Tag().name("Admin — Reservations").description("Admin reservation management"),
                         new Tag().name("Admin — Tours").description("Admin tour statistics"),
+                        new Tag().name("Admin — Customer Groups").description("Customer group (household/company/travel-party) management"),
                         new Tag().name("Admin — Roles").description("Super admin role/permission management")
                 ))
                 .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))

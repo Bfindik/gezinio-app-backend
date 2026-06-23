@@ -77,5 +77,12 @@ public enum PermissionName {
 
     // ==================== CUSTOMER OPERATIONS ====================
     MY_RESERVATIONS_VIEW, // Kendi rezervasyonlarını görme
-    REVIEW_CREATE         // Yorum yazma
+    REVIEW_CREATE,        // Yorum yazma
+
+    // ==================== CUSTOMER GROUP MANAGEMENT ====================
+    CUSTOMER_GROUP_CREATE,
+    CUSTOMER_GROUP_READ,
+    CUSTOMER_GROUP_UPDATE,
+    CUSTOMER_GROUP_DELETE,
+    CUSTOMER_GROUP_MANAGE_MEMBERS
 }

@@ -134,7 +134,10 @@ public class DataInitializer {
                         PermissionName.PAYMENT_READ,
 
                         // Raporlar
-                        PermissionName.REPORT_READ
+                        PermissionName.REPORT_READ,
+
+                        // Müşteri grupları (read-only)
+                        PermissionName.CUSTOMER_GROUP_READ
                 )
         );
 
@@ -183,7 +186,13 @@ public class DataInitializer {
 
                         // Raporlar
                         PermissionName.REPORT_READ,
-                        PermissionName.REPORT_CREATE
+                        PermissionName.REPORT_CREATE,
+
+                        // Müşteri grupları
+                        PermissionName.CUSTOMER_GROUP_CREATE,
+                        PermissionName.CUSTOMER_GROUP_READ,
+                        PermissionName.CUSTOMER_GROUP_UPDATE,
+                        PermissionName.CUSTOMER_GROUP_MANAGE_MEMBERS
                 )
         );
 
@@ -241,7 +250,14 @@ public class DataInitializer {
                         PermissionName.REPORT_CREATE,
                         PermissionName.REPORT_READ,
                         PermissionName.REPORT_UPDATE,
-                        PermissionName.REPORT_DELETE
+                        PermissionName.REPORT_DELETE,
+
+                        // Müşteri grupları (full)
+                        PermissionName.CUSTOMER_GROUP_CREATE,
+                        PermissionName.CUSTOMER_GROUP_READ,
+                        PermissionName.CUSTOMER_GROUP_UPDATE,
+                        PermissionName.CUSTOMER_GROUP_DELETE,
+                        PermissionName.CUSTOMER_GROUP_MANAGE_MEMBERS
                 )
         );
 
