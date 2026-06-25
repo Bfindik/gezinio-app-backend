@@ -1,0 +1,34 @@
+package com.example.gezinio.admin.controller;
+
+import com.example.gezinio.admin.dto.AdminTourStatsDTO;
+import com.example.gezinio.admin.service.AdminTourService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/admin/tours")
+@PreAuthorize("hasRole('ADMIN')")
+@Tag(name = "Admin — Tours", description = "Administrative tour statistics and reporting")
+public class AdminTourController {
+
+    private final AdminTourService adminTourService;
+
+    @Autowired
+    public AdminTourController(AdminTourService adminTourService) {
+        this.adminTourService = adminTourService;
+    }
+
+    @GetMapping("/stats")
+    @Operation(summary = "Get aggregated statistics for all tours")
+    public ResponseEntity<List<AdminTourStatsDTO>> getTourStats() {
+        return ResponseEntity.ok(adminTourService.getAllTourStats());
+    }
+}

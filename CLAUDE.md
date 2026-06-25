@@ -27,7 +27,7 @@ Manual API testing script: `test-api.sh` (uses curl + jq against localhost:8080)
 
 Spring Boot 3 / Java 17 REST API for a tourism/travel agency platform. Uses PostgreSQL with Spring Data JPA (`ddl-auto=update` — schema evolves automatically). JWT-based stateless auth with refresh token rotation.
 
-**Package root:** `com.example.agentapp`
+**Package root:** `com.example.gezinio`
 
 **Modules (each with controller → service → repository layers):**
 
