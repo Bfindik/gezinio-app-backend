@@ -20,7 +20,7 @@ public class EmailService {
     @Value("${spring.mail.username}")
     private String fromAddress;
 
-    @Value("${app.mail.from-name:AgentApp}")
+    @Value("${app.mail.from-name:${app.brand.name:Gezinio}}")
     private String fromName;
 
     @Autowired

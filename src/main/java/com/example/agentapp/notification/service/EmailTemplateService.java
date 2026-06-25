@@ -1,6 +1,7 @@
 package com.example.agentapp.notification.service;
 
 import com.example.agentapp.notification.event.AppNotificationEvent;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -8,10 +9,14 @@ import java.math.BigDecimal;
 @Service
 public class EmailTemplateService {
 
+    /** Görünen marka adı — e-postaların başlık ve gövdesinde kullanılır. */
+    @Value("${app.brand.name:Gezinio}")
+    private String brandName;
+
     public String getSubject(AppNotificationEvent event) {
         return switch (event.getEventType()) {
-            case USER_REGISTERED       -> "Welcome to AgentApp, " + event.getUsername() + "!";
-            case STAFF_INVITED         -> "You have been invited to AgentApp — activate your account";
+            case USER_REGISTERED       -> "Welcome to " + brandName + ", " + event.getUsername() + "!";
+            case STAFF_INVITED         -> "You have been invited to " + brandName + " — activate your account";
             case RESERVATION_CREATED   -> "Reservation Received - #" + event.getReservationId();
             case RESERVATION_CONFIRMED -> "Reservation Confirmed - #" + event.getReservationId();
             case RESERVATION_CANCELLED -> "Reservation Cancelled - #" + event.getReservationId();
@@ -35,10 +40,10 @@ public class EmailTemplateService {
     private String buildUserRegistered(AppNotificationEvent e) {
         return html("""
                 <h2>Welcome, %s!</h2>
-                <p>Thank you for joining AgentApp. Your account has been successfully created.</p>
+                <p>Thank you for joining %s. Your account has been successfully created.</p>
                 <p>You can now explore tours, make reservations, and manage your travel plans with ease.</p>
                 <p>We wish you wonderful adventures ahead!</p>
-                """.formatted(e.getUsername()));
+                """.formatted(e.getUsername(), brandName));
     }
 
     private String buildStaffInvited(AppNotificationEvent e) {
@@ -46,7 +51,7 @@ public class EmailTemplateService {
                 ? e.getRecipientName() : e.getUsername();
         return html("""
                 <h2>Welcome aboard, %s!</h2>
-                <p>An administrator has created an AgentApp staff account for you with the
+                <p>An administrator has created a %s staff account for you with the
                 username <strong>%s</strong>.</p>
                 <p>To finish setting up your account, choose your own password by clicking the
                 button below:</p>
@@ -60,7 +65,7 @@ public class EmailTemplateService {
                 this link into your browser:<br><span style="color:#2c3e50">%s</span></p>
                 <p style="color:#e67e22"><strong>Note:</strong> This invitation link expires in
                 7 days. If it has expired, ask an administrator to re-send your invitation.</p>
-                """.formatted(name, e.getUsername(), e.getInviteLink(), e.getInviteLink()));
+                """.formatted(name, brandName, e.getUsername(), e.getInviteLink(), e.getInviteLink()));
     }
 
     private String buildReservationCreated(AppNotificationEvent e) {
@@ -157,14 +162,14 @@ public class EmailTemplateService {
                 <!DOCTYPE html>
                 <html><body style="font-family:Arial,sans-serif;color:#333;max-width:600px;margin:auto;padding:20px">
                 <div style="border-bottom:3px solid #2c3e50;padding-bottom:12px;margin-bottom:20px">
-                  <span style="font-size:22px;font-weight:bold;color:#2c3e50">AgentApp</span>
+                  <span style="font-size:22px;font-weight:bold;color:#2c3e50">%s</span>
                 </div>
                 %s
                 <div style="border-top:1px solid #eee;margin-top:30px;padding-top:12px;font-size:12px;color:#999">
                   This email was sent automatically. Please do not reply.
                 </div>
                 </body></html>
-                """.formatted(body);
+                """.formatted(brandName, body);
     }
 
     private String formatAmount(BigDecimal amount) {

@@ -20,13 +20,16 @@ public class OpenApiConfig {
     @Value("${app.version:1.0.0}")
     private String appVersion;
 
+    @Value("${app.brand.name:Gezinio}")
+    private String brandName;
+
     @Bean
     public OpenAPI tourismAgencyOpenAPI() {
         final String securitySchemeName = "bearerAuth";
 
         return new OpenAPI()
                 .info(new Info()
-                        .title("Tourism Agency Management API")
+                        .title(brandName + " — Tourism Agency Management API")
                         .description("""
                                 REST API for the Tourism Agency Management System.
                                 
@@ -59,11 +62,11 @@ public class OpenApiConfig {
                                 """)
                         .version(appVersion)
                         .contact(new Contact()
-                                .name("AgentApp Dev Team")
-                                .email("dev@agentapp.com")))
+                                .name(brandName + " Dev Team")
+                                .email("dev@gezinio.com")))
                 .servers(List.of(
                         new Server().url("http://localhost:8080").description("Local development"),
-                        new Server().url("https://api.agentapp.com").description("Production")))
+                        new Server().url("https://api.gezinio.com").description("Production")))
                 // Tag ordering — controls the section order in Swagger UI
                 .tags(List.of(
                         new Tag().name("Users").description("User CRUD and current user operations"),

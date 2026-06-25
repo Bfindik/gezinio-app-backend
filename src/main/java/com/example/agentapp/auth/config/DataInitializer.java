@@ -327,7 +327,7 @@ public class DataInitializer {
         // Admin user oluştur
         User admin = new User();
         admin.setUsername("admin");
-        admin.setEmail("admin@agentapp.com");
+        admin.setEmail("admin@gezinio.com");
         admin.setPassword(passwordEncoder.encode("Admin123!")); // ⚠️ DEĞİŞTİR!
         admin.setFirstName("Super");
         admin.setLastName("Admin");
