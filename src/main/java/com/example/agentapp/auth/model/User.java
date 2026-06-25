@@ -80,6 +80,12 @@ public class User {
     @Column(name = "last_login_ip", length = 45)
     private String lastLoginIp;
 
+    @Column(name = "invite_token", unique = true, length = 80)
+    private String inviteToken;
+
+    @Column(name = "invite_token_expires_at")
+    private LocalDateTime inviteTokenExpiresAt;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -266,4 +272,25 @@ public class User {
         return updatedAt;
     }
 
+    public String getInviteToken() {
+        return inviteToken;
+    }
+
+    public void setInviteToken(String inviteToken) {
+        this.inviteToken = inviteToken;
+    }
+
+    public LocalDateTime getInviteTokenExpiresAt() {
+        return inviteTokenExpiresAt;
+    }
+
+    public void setInviteTokenExpiresAt(LocalDateTime inviteTokenExpiresAt) {
+        this.inviteTokenExpiresAt = inviteTokenExpiresAt;
+    }
+
+    public boolean hasActiveInvite() {
+        return inviteToken != null
+                && inviteTokenExpiresAt != null
+                && inviteTokenExpiresAt.isAfter(LocalDateTime.now());
+    }
 }

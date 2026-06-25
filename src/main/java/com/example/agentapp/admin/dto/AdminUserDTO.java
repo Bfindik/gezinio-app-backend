@@ -18,6 +18,8 @@ public class AdminUserDTO {
     private boolean enabled;
     private boolean locked;
     private boolean emailVerified;
+    private String accountStatus;
+    private String inviteToken;
     private LocalDateTime lastLogin;
     private LocalDateTime createdAt;
 
@@ -62,6 +64,12 @@ public class AdminUserDTO {
 
     public boolean isEmailVerified() { return emailVerified; }
     public void setEmailVerified(boolean emailVerified) { this.emailVerified = emailVerified; }
+
+    public String getAccountStatus() { return accountStatus; }
+    public void setAccountStatus(String accountStatus) { this.accountStatus = accountStatus; }
+
+    public String getInviteToken() { return inviteToken; }
+    public void setInviteToken(String inviteToken) { this.inviteToken = inviteToken; }
 
     public LocalDateTime getLastLogin() { return lastLogin; }
     public void setLastLogin(LocalDateTime lastLogin) { this.lastLogin = lastLogin; }

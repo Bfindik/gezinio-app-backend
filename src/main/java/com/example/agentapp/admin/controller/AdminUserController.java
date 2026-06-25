@@ -2,9 +2,11 @@ package com.example.agentapp.admin.controller;
 
 import com.example.agentapp.admin.dto.AdminUserDTO;
 import com.example.agentapp.admin.dto.ChangeRoleRequest;
+import com.example.agentapp.admin.dto.CreateStaffRequest;
 import com.example.agentapp.admin.service.AdminUserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -30,6 +32,20 @@ public class AdminUserController {
     @Operation(summary = "List all users with admin-level detail")
     public ResponseEntity<List<AdminUserDTO>> getAllUsers() {
         return ResponseEntity.ok(adminUserService.getAllUsers());
+    }
+
+    @PostMapping
+    @PreAuthorize("hasAuthority('USER_CREATE')")
+    @Operation(summary = "Invite a new STAFF account — provisions a PENDING user and returns an activation token")
+    public ResponseEntity<AdminUserDTO> createStaff(@Valid @RequestBody CreateStaffRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(adminUserService.createStaff(request));
+    }
+
+    @PostMapping("/{id}/resend-invite")
+    @PreAuthorize("hasAuthority('USER_CREATE')")
+    @Operation(summary = "Regenerate the activation token for a PENDING staff account")
+    public ResponseEntity<AdminUserDTO> resendInvite(@PathVariable Long id) {
+        return ResponseEntity.ok(adminUserService.resendInvite(id));
     }
 
     @GetMapping("/{id}")

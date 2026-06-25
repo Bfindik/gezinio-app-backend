@@ -56,7 +56,9 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/auth/login",
                                 "/api/auth/register",
-                                "/api/auth/refresh"
+                                "/api/auth/refresh",
+                                "/api/auth/activate",
+                                "/api/auth/invite/**"
                         ).permitAll()
 
                         // Swagger/API Docs (opsiyonel)

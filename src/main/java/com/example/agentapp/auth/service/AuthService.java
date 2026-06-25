@@ -13,6 +13,7 @@ import com.example.agentapp.notification.event.AppNotificationEvent;
 import com.example.agentapp.notification.model.NotificationEventType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,6 +22,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -237,6 +239,70 @@ public class AuthService {
                 jwtService.getJwtExpirationInSeconds(),
                 userDTO
         );
+    }
+
+    // ============================================================
+    // STAFF INVITE — peek + activate
+    // ============================================================
+
+    /**
+     * Validate an invite token without consuming it; lets the activation page
+     * greet the employee by name before they pick a password.
+     */
+    @Transactional(readOnly = true)
+    public InvitePreviewDTO peekInvite(String token) {
+        User user = findInvited(token);
+        return new InvitePreviewDTO(
+                user.getUsername(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail(),
+                "activate"
+        );
+    }
+
+    /**
+     * Consume an invite token: set the user's chosen password, mark the account
+     * verified, clear the one-time token. Account goes ACTIVE.
+     */
+    @Transactional
+    public AuthResponse activateAccount(AcceptInviteRequest request) {
+        User user = findInvited(request.getToken());
+
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setEmailVerified(true);
+        user.setEnabled(true);
+        user.setAccountNonLocked(true);
+        user.resetFailedAttempts();
+        user.setInviteToken(null);
+        user.setInviteTokenExpiresAt(null);
+
+        User saved = userRepository.save(user);
+
+        // Issue a session straight away so the UI can drop the user on the dashboard
+        String accessToken = jwtService.generateToken(saved.getUsername(), saved.getId());
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(saved);
+
+        return new AuthResponse(
+                accessToken,
+                refreshToken.getToken(),
+                jwtService.getJwtExpirationInSeconds(),
+                mapToDTO(saved)
+        );
+    }
+
+    private User findInvited(String token) {
+        if (token == null || token.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invite token is required");
+        }
+        User user = userRepository.findByInviteToken(token)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "This link is invalid or has already been used. Ask an administrator to re-send your invitation."));
+        if (!user.hasActiveInvite()) {
+            throw new ResponseStatusException(HttpStatus.GONE,
+                    "This link has expired. Ask an administrator to re-send your invitation.");
+        }
+        return user;
     }
 
     /**

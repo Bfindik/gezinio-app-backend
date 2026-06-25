@@ -2,6 +2,7 @@ package com.example.agentapp.admin.service;
 
 import com.example.agentapp.admin.dto.AdminUserDTO;
 import com.example.agentapp.admin.dto.ChangeRoleRequest;
+import com.example.agentapp.admin.dto.CreateStaffRequest;
 import com.example.agentapp.auth.model.Role;
 import com.example.agentapp.auth.model.RoleName;
 import com.example.agentapp.auth.model.User;
@@ -16,7 +17,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -28,12 +32,17 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+// The @BeforeEach stubs toDTO inputs that are only used by happy-path tests.
+// LENIENT strictness keeps the early-throw cases (NotFound / Conflict / BadRequest)
+// from failing on unused stubs — those tests intentionally never reach toDTO.
+@MockitoSettings(strictness = Strictness.LENIENT)
 class AdminUserServiceTest {
 
     @Mock UserRepository userRepository;
     @Mock RoleRepository roleRepository;
     @Mock ReservationRepository reservationRepository;
     @Mock PaymentRepository paymentRepository;
+    @Mock PasswordEncoder passwordEncoder;
 
     @InjectMocks AdminUserService service;
 
@@ -163,5 +172,96 @@ class AdminUserServiceTest {
 
         assertTrue(user.getRoles().contains(managerRole));
         verify(userRepository).save(user);
+    }
+
+    // ─── createStaff ──────────────────────────────────────────────────────────
+
+    @Test
+    void createStaff_whenUsernameTaken_throwsConflict() {
+        when(userRepository.existsByUsername("ali")).thenReturn(true);
+
+        org.springframework.web.server.ResponseStatusException ex = assertThrows(
+                org.springframework.web.server.ResponseStatusException.class,
+                () -> service.createStaff(staffRequest("ali", "ali@mail.com", "OFFICER")));
+
+        assertEquals(HttpStatus.CONFLICT, ex.getStatusCode());
+    }
+
+    @Test
+    void createStaff_whenCustomerRoleRequested_throwsBadRequest() {
+        when(userRepository.existsByUsername("ali")).thenReturn(false);
+        when(userRepository.existsByEmail("ali@mail.com")).thenReturn(false);
+        Role customerRole = new Role(RoleName.CUSTOMER.name());
+        when(roleRepository.findByName(RoleName.CUSTOMER.name())).thenReturn(Optional.of(customerRole));
+
+        org.springframework.web.server.ResponseStatusException ex = assertThrows(
+                org.springframework.web.server.ResponseStatusException.class,
+                () -> service.createStaff(staffRequest("ali", "ali@mail.com", "CUSTOMER")));
+
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+    }
+
+    @Test
+    void createStaff_success_provisionsPendingUserWithInviteToken() {
+        when(userRepository.existsByUsername("ali")).thenReturn(false);
+        when(userRepository.existsByEmail("ali@mail.com")).thenReturn(false);
+        Role officerRole = new Role(RoleName.OFFICER.name());
+        when(roleRepository.findByName(RoleName.OFFICER.name())).thenReturn(Optional.of(officerRole));
+        when(passwordEncoder.encode(anyString())).thenReturn("$throwaway");
+        when(userRepository.save(any(User.class))).thenAnswer(inv -> {
+            User u = inv.getArgument(0);
+            u.setId(7L);
+            return u;
+        });
+        when(reservationRepository.countByUserId(7L)).thenReturn(0L);
+        when(reservationRepository.findByUserId(7L)).thenReturn(List.of());
+
+        AdminUserDTO dto = service.createStaff(staffRequest("ali", "ali@mail.com", "OFFICER"));
+
+        assertEquals("ali", dto.getUsername());
+        assertEquals("PENDING", dto.getAccountStatus());
+        assertNotNull(dto.getInviteToken(), "invite token must be present for pending account");
+        assertFalse(dto.isEmailVerified());
+    }
+
+    // ─── resendInvite ─────────────────────────────────────────────────────────
+
+    @Test
+    void resendInvite_whenAlreadyActivated_throwsBadRequest() {
+        user.setEmailVerified(true);
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        org.springframework.web.server.ResponseStatusException ex = assertThrows(
+                org.springframework.web.server.ResponseStatusException.class,
+                () -> service.resendInvite(1L));
+
+        assertEquals(HttpStatus.BAD_REQUEST, ex.getStatusCode());
+    }
+
+    @Test
+    void resendInvite_success_mintsNewToken() {
+        user.setEmailVerified(false);
+        user.setInviteToken("old-token");
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(userRepository.save(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        AdminUserDTO dto = service.resendInvite(1L);
+
+        assertNotNull(dto.getInviteToken());
+        assertNotEquals("old-token", dto.getInviteToken());
+        assertEquals("PENDING", dto.getAccountStatus());
+    }
+
+    // ─── Helpers ──────────────────────────────────────────────────────────────
+
+    private CreateStaffRequest staffRequest(String username, String email, String role) {
+        CreateStaffRequest req = new CreateStaffRequest();
+        req.setFirstName("Ali");
+        req.setLastName("Veli");
+        req.setUsername(username);
+        req.setEmail(email);
+        req.setPhone("+905551234567");
+        req.setRoles(Set.of(role));
+        return req;
     }
 }

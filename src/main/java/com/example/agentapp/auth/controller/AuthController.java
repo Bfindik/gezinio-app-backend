@@ -78,4 +78,19 @@ public class AuthController {
         );
     }
 
+    @GetMapping("/invite/{token}")
+    @Operation(summary = "Preview a staff invite token (no consumption) — used by the activation page to greet the employee")
+    public ResponseEntity<ApiResponse<InvitePreviewDTO>> previewInvite(@PathVariable String token) {
+        InvitePreviewDTO preview = authService.peekInvite(token);
+        return ResponseEntity.ok(ApiResponse.success("Invite is valid", preview));
+    }
+
+    @PostMapping("/activate")
+    @Operation(summary = "Accept a staff invite: set a password and receive a fresh JWT session")
+    public ResponseEntity<ApiResponse<AuthResponse>> activate(
+            @Valid @RequestBody AcceptInviteRequest request) {
+        AuthResponse authResponse = authService.activateAccount(request);
+        return ResponseEntity.ok(ApiResponse.success("Account activated", authResponse));
+    }
+
 }
