@@ -9,16 +9,20 @@ import com.example.agentapp.auth.model.User;
 import com.example.agentapp.auth.model.UserType;
 import com.example.agentapp.auth.repository.RoleRepository;
 import com.example.agentapp.auth.repository.UserRepository;
+import com.example.agentapp.notification.event.AppNotificationEvent;
+import com.example.agentapp.notification.model.NotificationEventType;
 import com.example.agentapp.payment.repository.PaymentRepository;
 import com.example.agentapp.reservation.repository.ReservationRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.server.ResponseStatusException;
@@ -43,6 +47,7 @@ class AdminUserServiceTest {
     @Mock ReservationRepository reservationRepository;
     @Mock PaymentRepository paymentRepository;
     @Mock PasswordEncoder passwordEncoder;
+    @Mock ApplicationEventPublisher eventPublisher;
 
     @InjectMocks AdminUserService service;
 
@@ -222,6 +227,15 @@ class AdminUserServiceTest {
         assertEquals("PENDING", dto.getAccountStatus());
         assertNotNull(dto.getInviteToken(), "invite token must be present for pending account");
         assertFalse(dto.isEmailVerified());
+
+        // activation email must be dispatched to the staff member's address
+        ArgumentCaptor<AppNotificationEvent> captor = ArgumentCaptor.forClass(AppNotificationEvent.class);
+        verify(eventPublisher).publishEvent(captor.capture());
+        AppNotificationEvent event = captor.getValue();
+        assertEquals(NotificationEventType.STAFF_INVITED, event.getEventType());
+        assertEquals("ali@mail.com", event.getEmail());
+        assertNotNull(event.getInviteLink());
+        assertTrue(event.getInviteLink().contains("token="));
     }
 
     // ─── resendInvite ─────────────────────────────────────────────────────────
@@ -250,6 +264,7 @@ class AdminUserServiceTest {
         assertNotNull(dto.getInviteToken());
         assertNotEquals("old-token", dto.getInviteToken());
         assertEquals("PENDING", dto.getAccountStatus());
+        verify(eventPublisher).publishEvent(any(AppNotificationEvent.class));
     }
 
     // ─── Helpers ──────────────────────────────────────────────────────────────

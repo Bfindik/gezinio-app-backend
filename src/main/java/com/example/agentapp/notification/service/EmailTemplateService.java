@@ -11,6 +11,7 @@ public class EmailTemplateService {
     public String getSubject(AppNotificationEvent event) {
         return switch (event.getEventType()) {
             case USER_REGISTERED       -> "Welcome to AgentApp, " + event.getUsername() + "!";
+            case STAFF_INVITED         -> "You have been invited to AgentApp — activate your account";
             case RESERVATION_CREATED   -> "Reservation Received - #" + event.getReservationId();
             case RESERVATION_CONFIRMED -> "Reservation Confirmed - #" + event.getReservationId();
             case RESERVATION_CANCELLED -> "Reservation Cancelled - #" + event.getReservationId();
@@ -22,6 +23,7 @@ public class EmailTemplateService {
     public String getBody(AppNotificationEvent event) {
         return switch (event.getEventType()) {
             case USER_REGISTERED       -> buildUserRegistered(event);
+            case STAFF_INVITED         -> buildStaffInvited(event);
             case RESERVATION_CREATED   -> buildReservationCreated(event);
             case RESERVATION_CONFIRMED -> buildReservationConfirmed(event);
             case RESERVATION_CANCELLED -> buildReservationCancelled(event);
@@ -37,6 +39,28 @@ public class EmailTemplateService {
                 <p>You can now explore tours, make reservations, and manage your travel plans with ease.</p>
                 <p>We wish you wonderful adventures ahead!</p>
                 """.formatted(e.getUsername()));
+    }
+
+    private String buildStaffInvited(AppNotificationEvent e) {
+        String name = e.getRecipientName() != null && !e.getRecipientName().isBlank()
+                ? e.getRecipientName() : e.getUsername();
+        return html("""
+                <h2>Welcome aboard, %s!</h2>
+                <p>An administrator has created an AgentApp staff account for you with the
+                username <strong>%s</strong>.</p>
+                <p>To finish setting up your account, choose your own password by clicking the
+                button below:</p>
+                <p style="text-align:center;margin:28px 0">
+                  <a href="%s" style="background:#2c3e50;color:#fff;text-decoration:none;
+                     padding:12px 28px;border-radius:4px;font-weight:bold;display:inline-block">
+                     Activate my account
+                  </a>
+                </p>
+                <p style="font-size:13px;color:#777">If the button does not work, copy and paste
+                this link into your browser:<br><span style="color:#2c3e50">%s</span></p>
+                <p style="color:#e67e22"><strong>Note:</strong> This invitation link expires in
+                7 days. If it has expired, ask an administrator to re-send your invitation.</p>
+                """.formatted(name, e.getUsername(), e.getInviteLink(), e.getInviteLink()));
     }
 
     private String buildReservationCreated(AppNotificationEvent e) {

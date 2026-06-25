@@ -31,6 +31,10 @@ public class AppNotificationEvent extends ApplicationEvent {
     private String groupCode;
     private String notes;
 
+    // Staff invite bilgileri
+    private String inviteLink;   // aktivasyon linki (token gömülü)
+    private String recipientName; // mailde hitap için (ad soyad)
+
     public AppNotificationEvent(Object source,
                                  NotificationEventType eventType,
                                  Long userId,
@@ -77,6 +81,12 @@ public class AppNotificationEvent extends ApplicationEvent {
         return this;
     }
 
+    public AppNotificationEvent withInvite(String inviteLink, String recipientName) {
+        this.inviteLink = inviteLink;
+        this.recipientName = recipientName;
+        return this;
+    }
+
     // Getters
 
     public NotificationEventType getEventType() { return eventType; }
@@ -93,4 +103,6 @@ public class AppNotificationEvent extends ApplicationEvent {
     public BigDecimal getRefundAmount() { return refundAmount; }
     public String getGroupCode() { return groupCode; }
     public String getNotes() { return notes; }
+    public String getInviteLink() { return inviteLink; }
+    public String getRecipientName() { return recipientName; }
 }

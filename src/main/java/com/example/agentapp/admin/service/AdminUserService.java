@@ -9,10 +9,14 @@ import com.example.agentapp.auth.model.User;
 import com.example.agentapp.auth.model.UserType;
 import com.example.agentapp.auth.repository.RoleRepository;
 import com.example.agentapp.auth.repository.UserRepository;
+import com.example.agentapp.notification.event.AppNotificationEvent;
+import com.example.agentapp.notification.model.NotificationEventType;
 import com.example.agentapp.payment.repository.PaymentRepository;
 import com.example.agentapp.reservation.model.ReservationStatus;
 import com.example.agentapp.reservation.repository.ReservationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -36,18 +40,24 @@ public class AdminUserService {
     private final ReservationRepository reservationRepository;
     private final PaymentRepository paymentRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ApplicationEventPublisher eventPublisher;
+
+    @Value("${app.frontend.activation-url:http://localhost:3000/activate}")
+    private String activationBaseUrl;
 
     @Autowired
     public AdminUserService(UserRepository userRepository,
                              RoleRepository roleRepository,
                              ReservationRepository reservationRepository,
                              PaymentRepository paymentRepository,
-                             PasswordEncoder passwordEncoder) {
+                             PasswordEncoder passwordEncoder,
+                             ApplicationEventPublisher eventPublisher) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.reservationRepository = reservationRepository;
         this.paymentRepository = paymentRepository;
         this.passwordEncoder = passwordEncoder;
+        this.eventPublisher = eventPublisher;
     }
 
     public List<AdminUserDTO> getAllUsers() {
@@ -130,7 +140,9 @@ public class AdminUserService {
         user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
 
         issueInvite(user);
-        return toDTO(userRepository.save(user));
+        User saved = userRepository.save(user);
+        sendInviteEmail(saved);
+        return toDTO(saved);
     }
 
     @Transactional
@@ -141,7 +153,9 @@ public class AdminUserService {
                     "Account is already activated; cannot resend invite");
         }
         issueInvite(user);
-        return toDTO(userRepository.save(user));
+        User saved = userRepository.save(user);
+        sendInviteEmail(saved);
+        return toDTO(saved);
     }
 
     private void issueInvite(User user) {
@@ -149,6 +163,22 @@ public class AdminUserService {
                 + UUID.randomUUID().toString().replace("-", "").substring(0, 8);
         user.setInviteToken(token);
         user.setInviteTokenExpiresAt(LocalDateTime.now().plusDays(INVITE_TTL_DAYS));
+    }
+
+    /**
+     * Dispatch the activation email to the staff member's (corporate) address.
+     * The one-time token is embedded in the activation link; the employee clicks
+     * it and sets their own password. Handled async by the notification module.
+     */
+    private void sendInviteEmail(User user) {
+        String inviteLink = activationBaseUrl + "?token=" + user.getInviteToken();
+        String fullName = ((user.getFirstName() == null ? "" : user.getFirstName()) + " "
+                + (user.getLastName() == null ? "" : user.getLastName())).trim();
+
+        eventPublisher.publishEvent(new AppNotificationEvent(
+                this, NotificationEventType.STAFF_INVITED,
+                user.getId(), user.getUsername(), user.getEmail(), user.getPhone()
+        ).withInvite(inviteLink, fullName));
     }
 
     // ============================================================
